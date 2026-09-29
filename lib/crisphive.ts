@@ -168,7 +168,13 @@ export function unwrap(envelope: unknown): unknown {
 	if (!isObject(envelope)) throw new Error('Crisphive: empty response');
 	if (envelope.error_code === 0) return envelope.data;
 	const code = (envelope.error_code as string | number | undefined) ?? 'UNKNOWN';
-	throw new CrisphiveApiError(`Crisphive ${code}: ${String(envelope.message ?? '')}`.trim(), code, envelope.data);
+	// A permission refusal names the codes the credential lacks (e.g. customer
+	// events without customers_view); put them in the message so the workflow
+	// author can fix the role instead of guessing.
+	const data = isObject(envelope.data) ? envelope.data : undefined;
+	const need = data && Array.isArray(data.required_permissions) ? (data.required_permissions as unknown[]).map(String) : [];
+	const hint = need.length ? ` (needs permission: ${need.join(', ')})` : '';
+	throw new CrisphiveApiError(`Crisphive ${code}: ${String(envelope.message ?? '')}${hint}`.trim(), code, envelope.data);
 }
 
 /** True for the verification ping Crisphive sends WHILE the subscription is

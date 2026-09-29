@@ -99,3 +99,10 @@ test('event options come from the live catalogue, sorted, without ping', () => {
 	assert.deepEqual(api.eventOptions(null), []);
 	assert.equal(api.listWebhookEventTypes().path, '/v1/webhooks/event-types');
 });
+
+test('a permission refusal names the permission the credential lacks', () => {
+	assert.throws(
+		() => api.unwrap({ error_code: 'WEBHOOK_EVENT_NOT_PERMITTED', message: 'no', data: { required_permissions: ['customers_view', 'team_view'] } }),
+		(e) => e.errorCode === 'WEBHOOK_EVENT_NOT_PERMITTED' && e.message.includes('needs permission: customers_view, team_view'),
+	);
+});
