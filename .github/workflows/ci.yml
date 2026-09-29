@@ -1,0 +1,18 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # --ignore-scripts: the linter pulls in a native module (isolated-vm) it
+      # does not need; skipping install scripts keeps CI off a C++ build.
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm test

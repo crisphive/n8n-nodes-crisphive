@@ -1,0 +1,61 @@
+{
+  "name": "n8n-nodes-crisphive",
+  "version": "0.1.0",
+  "description": "n8n nodes for Crisphive \u2014 field operations on a deterministic solver: find callers, book and confirm jobs in one call, and trigger on job and customer events.",
+  "keywords": [
+    "n8n-community-node-package",
+    "crisphive",
+    "field-operations",
+    "field-service",
+    "scheduling",
+    "dispatch"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/crisphive/n8n-nodes-crisphive#readme",
+  "bugs": {
+    "url": "https://github.com/crisphive/n8n-nodes-crisphive/issues",
+    "email": "developer@crisphive.com"
+  },
+  "author": {
+    "name": "Crisphive",
+    "email": "developer@crisphive.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crisphive/n8n-nodes-crisphive.git"
+  },
+  "engines": {
+    "node": ">=20.15"
+  },
+  "scripts": {
+    "build": "tsc && node scripts/copy-assets.mjs",
+    "test": "npm run build && node --test test/",
+    "typecheck": "tsc --noEmit",
+    "lint": "n8n-node lint",
+    "prepublishOnly": "npm run lint && npm test"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/CrisphiveApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Crisphive/Crisphive.node.js",
+      "dist/nodes/CrisphiveTrigger/CrisphiveTrigger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "^0.50.2",
+    "@types/node": "^20.0.0",
+    "n8n-workflow": "^2.16.0",
+    "typescript": "^5.6.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}

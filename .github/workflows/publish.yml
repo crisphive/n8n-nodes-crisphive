@@ -1,0 +1,27 @@
+# Publishes to npm with a provenance statement, which n8n requires for verified
+# community nodes submitted from 2026-05-01. Uses npm Trusted Publishing (OIDC):
+# configure it once on npmjs.com (package → Settings → Trusted Publisher →
+# GitHub Actions, repository crisphive/n8n-nodes-crisphive, workflow
+# publish.yml). No NPM_TOKEN secret is needed or wanted.
+name: Publish to npm
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # --ignore-scripts: the linter pulls in a native module (isolated-vm) it
+      # does not need; skipping install scripts keeps CI off a C++ build.
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm test
+      - run: npm publish --provenance --access public
