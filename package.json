@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-crisphive",
-  "version": "0.1.0",
-  "description": "n8n nodes for Crisphive \u2014 field operations on a deterministic solver: find callers, book and confirm jobs in one call, and trigger on job and customer events.",
+  "version": "0.1.1",
+  "description": "n8n nodes for Crisphive — field operations on a deterministic solver: find callers, book and confirm jobs in one call, and trigger on job and customer events.",
   "keywords": [
     "n8n-community-node-package",
     "crisphive",
