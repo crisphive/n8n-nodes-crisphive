@@ -28,9 +28,9 @@ Restrict the key to what your workflows need, e.g. `customers_view`, `customers_
 
 | Operation | What it does |
 |---|---|
-| Book and Confirm Job | Books, schedules and confirms a job at a chosen time in one call. Send an existing Customer ID, or name + phone/email + address to match-or-create the caller. The job type is optional (empty = the business's default type, whose default duration is used). If no technician can take that time the job is still **saved** and `confirmed` is `false` — route it to a person; do not rerun with a new execution. |
+| Book and Confirm Job | Books, schedules and confirms a job at a chosen time in one call. Required: **Start** and, under **Customer**, either an **Existing Customer ID** or a **New or Returning Caller** (Full Name + Address Line, plus a Phone or Email under Additional Fields — the caller is matched or created). Job Type, Duration, Description and the rest of the address are Additional Fields; an empty job type uses the business's default type and its default duration. If no technician can take that time the job is still **saved** and `confirmed` is `false` — route it to a person; do not rerun with a new execution. |
 | Find Customer by Phone | Exact match on an E.164 number (`+16135550142`). |
-| Create Customer | Adds a customer. |
+| Create Customer | Adds a customer. Required: Full Name; a Phone or an Email under Additional Fields. |
 | Get Job | Reads one job. |
 | List Job Types | The business's job types and their default durations. |
 

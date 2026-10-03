@@ -62,6 +62,52 @@ export interface BookAndConfirmInput {
 	priority?: string;
 }
 
+/** The optional fields an operation collects under "Additional Fields". */
+export interface AdditionalFields {
+	email?: string;
+	phone?: string;
+	smsOptIn?: boolean;
+	city?: string;
+	state?: string;
+	postalCode?: string;
+	country?: string;
+	jobTypeId?: string;
+	duration?: number;
+	description?: string;
+}
+
+export function customerFromFields(fullName: string, f: AdditionalFields): CustomerInput {
+	return { full_name: fullName, phone: f.phone || undefined, email: f.email || undefined, sms_opt_in: f.smsOptIn === true };
+}
+
+/** Crisphive refuses a customer with neither a phone nor an email. */
+export function hasContact(c: CustomerInput): boolean {
+	return Boolean(c.phone?.trim() || c.email?.trim());
+}
+
+/** Builds the book-and-confirm body from the node's fields. An existing
+ *  customer sends only its id (Crisphive uses the stored address); a new or
+ *  returning caller sends contact + address and is matched or created. */
+export function bookAndConfirmInput(
+	scheduledAt: string,
+	f: AdditionalFields,
+	who: { customerId: string } | { fullName: string; addressLine: string },
+): BookAndConfirmInput {
+	const input: BookAndConfirmInput = {
+		scheduled_at: scheduledAt,
+		job_type_id: f.jobTypeId || undefined,
+		job_duration_minutes: f.duration && f.duration > 0 ? f.duration : undefined,
+		description: f.description || undefined,
+	};
+	if ('customerId' in who) {
+		input.customer_id = who.customerId;
+		return input;
+	}
+	input.customer = customerFromFields(who.fullName, f);
+	input.address = { line: who.addressLine, city: f.city, state: f.state, postal_code: f.postalCode, country: f.country };
+	return input;
+}
+
 export function bookAndConfirm(input: BookAndConfirmInput, key: string): RequestSpec {
 	return { method: 'POST', path: '/v1/job-requests/book-and-confirm', body: stripEmpty({ ...input }), headers: { 'Idempotency-Key': key } };
 }

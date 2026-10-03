@@ -106,3 +106,24 @@ test('a permission refusal names the permission the credential lacks', () => {
 		(e) => e.errorCode === 'WEBHOOK_EVENT_NOT_PERMITTED' && e.message.includes('needs permission: customers_view, team_view'),
 	);
 });
+
+test('an existing customer sends only its id: no contact, no address', () => {
+	const body = api.bookAndConfirm(api.bookAndConfirmInput('2026-10-06T10:00:00', { duration: 0, description: '' }, { customerId: 'c1' }), 'k').body;
+	assert.deepEqual(Object.keys(body).sort(), ['customer_id', 'scheduled_at']);
+});
+
+test('a new caller carries the required name + address and the optional fields', () => {
+	const input = api.bookAndConfirmInput('2026-10-06T10:00:00', { phone: '+16135550142', city: 'Ottawa', duration: 90, jobTypeId: 'jt' }, { fullName: 'Marie', addressLine: '145 Laurier Ave W' });
+	assert.equal(input.customer.full_name, 'Marie');
+	assert.equal(input.customer.phone, '+16135550142');
+	assert.equal(input.address.line, '145 Laurier Ave W');
+	assert.equal(input.address.city, 'Ottawa');
+	assert.equal(input.job_duration_minutes, 90);
+	assert.equal(input.job_type_id, 'jt');
+});
+
+test('a customer needs a phone or an email', () => {
+	assert.ok(!api.hasContact(api.customerFromFields('Marie', {})));
+	assert.ok(!api.hasContact(api.customerFromFields('Marie', { phone: '  ' })));
+	assert.ok(api.hasContact(api.customerFromFields('Marie', { email: 'm@example.com' })));
+});

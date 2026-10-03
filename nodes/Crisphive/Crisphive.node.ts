@@ -59,21 +59,72 @@ export class Crisphive implements INodeType {
 					{ name: 'List Job Types', value: 'listJobTypes', action: 'List job types' },
 				],
 			},
-			{ displayName: 'Customer ID', name: 'customerId', type: 'string', default: '', displayOptions: bookOnly, description: 'An existing customer. Leave empty to match-or-create from the fields below.' },
-			{ displayName: 'Full Name', name: 'fullName', type: 'string', default: '', displayOptions: { show: { operation: ['bookAndConfirm', 'createCustomer'] } } },
-			{ displayName: 'Phone (E.164)', name: 'phone', type: 'string', default: '', placeholder: '+16135550142', displayOptions: { show: { operation: ['bookAndConfirm', 'createCustomer', 'findCustomer'] } } },
-			{ displayName: 'Email', name: 'email', type: 'string', default: '', placeholder: 'name@email.com', displayOptions: { show: { operation: ['bookAndConfirm', 'createCustomer'] } } },
-			{ displayName: 'SMS Consent', name: 'smsOptIn', type: 'boolean', default: false, displayOptions: { show: { operation: ['bookAndConfirm', 'createCustomer'] } }, description: 'Whether the customer explicitly agreed to text messages. Leave off otherwise.' },
-			{ displayName: 'Address Line', name: 'addressLine', type: 'string', default: '', displayOptions: bookOnly, description: 'Required when booking a new customer' },
-			{ displayName: 'City', name: 'city', type: 'string', default: '', displayOptions: bookOnly },
-			{ displayName: 'State / Province', name: 'state', type: 'string', default: '', placeholder: 'ON', displayOptions: bookOnly },
-			{ displayName: 'Postal Code', name: 'postalCode', type: 'string', default: '', displayOptions: bookOnly },
-			{ displayName: 'Country', name: 'country', type: 'string', default: '', placeholder: 'CA', displayOptions: bookOnly },
-			{ displayName: 'Job Type ID', name: 'jobTypeId', type: 'string', default: '', displayOptions: bookOnly, description: "Optional. Empty = the business's default job type. Its default duration is used when Duration is empty." },
+			{
+				displayName: 'Customer',
+				name: 'customerMode',
+				type: 'options',
+				default: 'new',
+				displayOptions: bookOnly,
+				options: [
+					{ name: 'New or Returning Caller', value: 'new', description: 'Matched by phone or email against existing customers, created when there is no match' },
+					{ name: 'Existing Customer ID', value: 'existing', description: 'A customer already in Crisphive' },
+				],
+			},
+			{ displayName: 'Customer ID', name: 'customerId', type: 'string', default: '', required: true, displayOptions: { show: { operation: ['bookAndConfirm'], customerMode: ['existing'] } } },
+			{ displayName: 'Full Name', name: 'fullName', type: 'string', default: '', required: true, displayOptions: { show: { operation: ['bookAndConfirm'], customerMode: ['new'] } } },
+			{ displayName: 'Full Name', name: 'fullName', type: 'string', default: '', required: true, displayOptions: { show: { operation: ['createCustomer'] } } },
+			{ displayName: 'Address Line', name: 'addressLine', type: 'string', default: '', required: true, placeholder: '145 Laurier Ave W', displayOptions: { show: { operation: ['bookAndConfirm'], customerMode: ['new'] } }, description: 'Where the work happens. Add a City or Postal Code under Additional Fields so the address can be located.' },
+			{ displayName: 'Phone (E.164)', name: 'phone', type: 'string', default: '', required: true, placeholder: '+16135550142', displayOptions: { show: { operation: ['findCustomer'] } } },
 			{ displayName: 'Start (Business Local Time)', name: 'scheduledAt', type: 'string', default: '', required: true, placeholder: '2026-10-06T10:00:00', displayOptions: bookOnly, description: "No timezone offset — the business's own clock" },
-			{ displayName: 'Duration (Minutes)', name: 'duration', type: 'number', default: 0, displayOptions: bookOnly, description: '0 = use the job type default' },
-			{ displayName: 'Description', name: 'description', type: 'string', default: '', displayOptions: bookOnly },
 			{ displayName: 'Job ID', name: 'jobId', type: 'string', default: '', required: true, displayOptions: { show: { operation: ['getJob'] } } },
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: { show: { operation: ['createCustomer'] } },
+				description: 'A customer needs a Phone or an Email',
+				options: [
+					{ displayName: 'Email', name: 'email', type: 'string', default: '', placeholder: 'name@email.com' },
+					{ displayName: 'Phone (E.164)', name: 'phone', type: 'string', default: '', placeholder: '+16135550142' },
+					{ displayName: 'SMS Consent', name: 'smsOptIn', type: 'boolean', default: false, description: 'Whether the customer explicitly agreed to text messages. Leave off otherwise.' },
+				],
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: { show: { operation: ['bookAndConfirm'], customerMode: ['new'] } },
+				description: 'A new caller needs a Phone or an Email',
+				options: [
+					{ displayName: 'City', name: 'city', type: 'string', default: '' },
+					{ displayName: 'Country', name: 'country', type: 'string', default: '', placeholder: 'CA' },
+					{ displayName: 'Description', name: 'description', type: 'string', default: '' },
+					{ displayName: 'Duration (Minutes)', name: 'duration', type: 'number', default: 0, description: 'Empty or 0 = use the job type default' },
+					{ displayName: 'Email', name: 'email', type: 'string', default: '', placeholder: 'name@email.com' },
+					{ displayName: 'Job Type ID', name: 'jobTypeId', type: 'string', default: '', description: "Empty = the business's default job type, whose default duration is used when Duration is empty" },
+					{ displayName: 'Phone (E.164)', name: 'phone', type: 'string', default: '', placeholder: '+16135550142' },
+					{ displayName: 'Postal Code', name: 'postalCode', type: 'string', default: '' },
+					{ displayName: 'SMS Consent', name: 'smsOptIn', type: 'boolean', default: false, description: 'Whether the customer explicitly agreed to text messages. Leave off otherwise.' },
+					{ displayName: 'State / Province', name: 'state', type: 'string', default: '', placeholder: 'ON' },
+				],
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'additionalFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: { show: { operation: ['bookAndConfirm'], customerMode: ['existing'] } },
+				options: [
+					{ displayName: 'Description', name: 'description', type: 'string', default: '' },
+					{ displayName: 'Duration (Minutes)', name: 'duration', type: 'number', default: 0, description: 'Empty or 0 = use the job type default' },
+					{ displayName: 'Job Type ID', name: 'jobTypeId', type: 'string', default: '', description: "Empty = the business's default job type, whose default duration is used when Duration is empty" },
+				],
+			},
 		],
 	};
 
@@ -90,25 +141,22 @@ export class Crisphive implements INodeType {
 					if (!api.looksE164(p('phone'))) throw new NodeOperationError(this.getNode(), 'Phone must be E.164 with the leading + (e.g. +16135550142)', { itemIndex: i });
 					data = await call(this, api.findCustomerByPhone(p('phone')));
 				} else if (op === 'createCustomer') {
-					data = await call(this, api.createCustomer({ full_name: p('fullName'), phone: p('phone'), email: p('email'), sms_opt_in: this.getNodeParameter('smsOptIn', i, false) as boolean }, api.idempotencyKey(execId, i, 'customer')));
+					const f = this.getNodeParameter('additionalFields', i, {}) as api.AdditionalFields;
+					const customer = api.customerFromFields(p('fullName'), f);
+					// Crisphive needs a phone OR an email: neither is required on its own,
+					// so the pair is checked here with a message naming both.
+					if (!api.hasContact(customer)) throw new NodeOperationError(this.getNode(), 'Add a Phone or an Email under Additional Fields', { itemIndex: i });
+					data = await call(this, api.createCustomer(customer, api.idempotencyKey(execId, i, 'customer')));
 				} else if (op === 'getJob') {
 					data = await call(this, api.getJobRequest(p('jobId')));
 				} else if (op === 'listJobTypes') {
 					data = await call(this, api.listJobTypes());
 				} else {
-					const duration = this.getNodeParameter('duration', i, 0) as number;
-					const input: api.BookAndConfirmInput = {
-						job_type_id: p('jobTypeId') || undefined,
-						scheduled_at: p('scheduledAt'),
-						job_duration_minutes: duration > 0 ? duration : undefined,
-						description: p('description') || undefined,
-					};
-					if (p('customerId')) {
-						input.customer_id = p('customerId');
-					} else {
-						input.customer = { full_name: p('fullName'), phone: p('phone') || undefined, email: p('email') || undefined, sms_opt_in: this.getNodeParameter('smsOptIn', i, false) as boolean };
-						input.address = { line: p('addressLine'), city: p('city'), state: p('state'), postal_code: p('postalCode'), country: p('country') };
-					}
+					const f = this.getNodeParameter('additionalFields', i, {}) as api.AdditionalFields;
+					const mode = this.getNodeParameter('customerMode', i, 'new') as string;
+					const who = mode === 'existing' ? { customerId: p('customerId') } : { fullName: p('fullName'), addressLine: p('addressLine') };
+					const input = api.bookAndConfirmInput(p('scheduledAt'), f, who);
+					if (input.customer && !api.hasContact(input.customer)) throw new NodeOperationError(this.getNode(), 'A new caller needs a Phone or an Email under Additional Fields', { itemIndex: i });
 					data = await call(this, api.bookAndConfirm(input, api.idempotencyKey(execId, i, 'book-and-confirm')));
 				}
 				const rows = Array.isArray(data) ? data : [data];
